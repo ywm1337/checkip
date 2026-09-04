@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — CheckIP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="/" class="brand"><i class="fas fa-globe"></i> CHECKIP</a>
+            <div class="nav-links"><a href="/">Home</a></div>
+        </div>
+    </nav>
+
+    <div class="auth-page">
+        <div class="auth-card">
+            <h1 id="authTitle">Login</h1>
+            <p class="auth-sub" id="authSub">Access your CheckIP dashboard</p>
+
+            <form id="authForm" onsubmit="return false;">
+                <input type="email" id="email" placeholder="Email" required autocomplete="email">
+                <input type="password" id="password" placeholder="Password (min 6 chars)" required minlength="6">
+                <button type="submit" class="btn btn-primary" id="authBtn">Login</button>
+            </form>
+
+            <div class="auth-toggle">
+                <span id="toggleText">Don't have an account?</span>
+                <a href="#" id="toggleLink" onclick="toggleMode()">Register</a>
+            </div>
+
+            <div class="auth-error" id="authError"></div>
+        </div>
+    </div>
+
+    <script>
+        let mode = 'login';
+        const form = document.getElementById('authForm');
+        const title = document.getElementById('authTitle');
+        const sub = document.getElementById('authSub');
+        const btn = document.getElementById('authBtn');
+        const toggleText = document.getElementById('toggleText');
+        const toggleLink = document.getElementById('toggleLink');
+        const errorEl = document.getElementById('authError');
+
+        // Already logged in?
+        if (localStorage.getItem('checkip_user')) location.href = '/dashboard';
+
+        function toggleMode() {
+            mode = mode === 'login' ? 'register' : 'login';
+            title.textContent = mode === 'login' ? 'Login' : 'Register';
+            sub.textContent = mode === 'login' ? 'Access your CheckIP dashboard' : 'Create a free account (10 lookups/day)';
+            btn.textContent = mode === 'login' ? 'Login' : 'Register';
+            toggleText.textContent = mode === 'login' ? "Don't have an account?" : 'Already have an account?';
+            toggleLink.textContent = mode === 'login' ? 'Register' : 'Login';
+            errorEl.textContent = '';
+        }
+
+        form.addEventListener('submit', async () => {
+            errorEl.textContent = '';
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const endpoint = mode === 'login' ? '/api/login' : '/api/register';
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.error) { errorEl.textContent = data.error; return; }
+                localStorage.setItem('checkip_user', JSON.stringify(data.user));
+                location.href = '/dashboard';
+            } catch (e) {
+                errorEl.textContent = 'Connection error';
+            }
+        });
+    </script>
+</body>
+</html>

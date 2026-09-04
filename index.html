@@ -11,32 +11,29 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
-    <!-- Nav -->
     <nav class="nav">
         <div class="nav-inner">
             <a href="/" class="brand"><i class="fas fa-globe"></i> CHECKIP</a>
             <div class="nav-links">
                 <a href="#features">Features</a>
-                <a href="https://github.com/ywm1337/checkip" target="_blank"><i class="fab fa-github"></i></a>
+                <a href="/pricing">Pricing</a>
+                <div id="navAuth">
+                    <a href="/auth" class="nav-btn">Login</a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Hero -->
     <header class="hero">
         <div class="hero-content">
             <p class="tag mono">IP & DOMAIN INTELLIGENCE</p>
             <h1>Look up any IP.<br><span class="g">Instantly.</span></h1>
-            <p class="lead">
-                Enter an IP address or domain. Get location, ISP, coordinates,
-                DNS records, and related IPs — faster than CheckHost.
-            </p>
+            <p class="lead">Enter an IP address or domain. Get location, ISP, WHOIS, BGP, DNS, related IPs — all in one place.</p>
             <div class="search-box">
                 <div class="search-wrap">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" id="query" placeholder="8.8.8.8 or example.com" autocomplete="off" spellcheck="false">
-                    <button class="search-btn" id="searchBtn">Lookup</button>
+                    <button class="search-btn" id="searchBtn"><i class="fas fa-arrow-right"></i></button>
                 </div>
                 <div class="search-hints">
                     <span onclick="setQ('8.8.8.8')">8.8.8.8</span>
@@ -45,123 +42,51 @@
                     <span onclick="setQ('github.com')">github.com</span>
                 </div>
             </div>
+            <div class="credit-bar" id="creditBar" style="display:none;">
+                <i class="fas fa-coins"></i>
+                <span>Credits: <b id="creditCount">0</b> / <span id="creditLimit">10</span></span>
+                <a href="/pricing" class="credit-upgrade">Upgrade</a>
+            </div>
         </div>
         <div class="hero-glow"></div>
     </header>
 
-    <!-- Results (hidden until search) -->
     <section class="results" id="results" style="display:none;">
         <div class="results-inner">
-
-            <!-- Status bar -->
             <div class="status-bar" id="statusBar">
                 <span class="status-dot"></span>
                 <span id="statusText">Ready</span>
                 <span class="status-time" id="statusTime"></span>
             </div>
 
-            <!-- Main info card -->
-            <div class="info-grid" id="infoGrid">
-                <div class="info-card">
-                    <span class="info-label">IP Address</span>
-                    <span class="info-val mono" id="rIP">—</span>
-                </div>
-                <div class="info-card">
-                    <span class="info-label">Location</span>
-                    <span class="info-val" id="rLocation">—</span>
-                </div>
-                <div class="info-card">
-                    <span class="info-label">ISP</span>
-                    <span class="info-val" id="rISP">—</span>
-                </div>
-                <div class="info-card">
-                    <span class="info-label">Org</span>
-                    <span class="info-val" id="rOrg">—</span>
-                </div>
-                <div class="info-card">
-                    <span class="info-label">Timezone</span>
-                    <span class="info-val mono" id="rTimezone">—</span>
-                </div>
-                <div class="info-card">
-                    <span class="info-label">Coordinates</span>
-                    <span class="info-val mono" id="rCoords">—</span>
-                </div>
-                <div class="info-card">
-                    <span class="info-label">AS</span>
-                    <span class="info-val mono" id="rAS">—</span>
-                </div>
-                <div class="info-card">
-                    <span class="info-label">Reverse DNS</span>
-                    <span class="info-val mono" id="rReverse">—</span>
-                </div>
-            </div>
+            <div class="info-grid" id="infoGrid"></div>
 
-            <!-- Related IPs -->
-            <div class="section-header">
-                <h2><i class="fas fa-project-diagram"></i> Related IPs</h2>
-                <p>IPs from the same network range and ASN</p>
-            </div>
-            <div class="related-grid" id="relatedGrid">
-                <div class="empty-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <span>Scanning network range...</span>
-                </div>
-            </div>
+            <div class="section-header"><h2><i class="fas fa-server"></i> BGP / ASN</h2><p>Network origin and prefix data</p></div>
+            <div class="info-grid" id="bgpGrid"></div>
 
-            <!-- DNS Records -->
-            <div class="section-header">
-                <h2><i class="fas fa-list"></i> DNS Records</h2>
-                <p>A, AAAA, MX, NS, TXT records</p>
-            </div>
-            <div class="dns-grid" id="dnsGrid">
-                <div class="empty-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <span>Resolving DNS...</span>
-                </div>
-            </div>
+            <div class="section-header"><h2><i class="fas fa-shield-alt"></i> WHOIS / Abuse</h2><p>Registration and abuse contact info</p></div>
+            <div class="info-grid" id="whoisGrid"></div>
 
-            <!-- Ping -->
-            <div class="section-header">
-                <h2><i class="fas fa-signal"></i> Ping Check</h2>
-                <p>Response time from multiple locations</p>
-            </div>
-            <div class="ping-grid" id="pingGrid">
-                <div class="empty-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <span>Pinging...</span>
-                </div>
-            </div>
+            <div class="section-header"><h2><i class="fas fa-project-diagram"></i> Related IPs</h2><p>IPs from the same /24 range</p></div>
+            <div class="related-grid" id="relatedGrid"></div>
 
+            <div class="section-header"><h2><i class="fas fa-list"></i> DNS Records</h2><p>A, AAAA, MX, NS, TXT records</p></div>
+            <div class="dns-grid" id="dnsGrid"></div>
+
+            <div class="section-header"><h2><i class="fas fa-history"></i> Recent Lookups</h2><p>Your last 10 queries</p></div>
+            <div class="history-grid" id="historyGrid"></div>
         </div>
     </section>
 
-    <!-- Features -->
     <section class="features" id="features">
         <div class="features-inner">
-            <div class="feat">
-                <div class="feat-icon"><i class="fas fa-bolt"></i></div>
-                <h3>Instant Results</h3>
-                <p>Sub-second lookups. No waiting, no ads, no bs.</p>
-            </div>
-            <div class="feat">
-                <div class="feat-icon"><i class="fas fa-database"></i></div>
-                <h3>Deep Database</h3>
-                <p>IP ranges, ASN data, reverse DNS, related IPs — all in one place.</p>
-            </div>
-            <div class="feat">
-                <div class="feat-icon"><i class="fas fa-globe"></i></div>
-                <h3>Multi-Source</h3>
-                <p>Cross-references multiple APIs for the most accurate result.</p>
-            </div>
-            <div class="feat">
-                <div class="feat-icon"><i class="fas fa-shield-alt"></i></div>
-                <h3>No Tracking</h3>
-                <p>Zero logs. Your queries stay yours.</p>
-            </div>
+            <div class="feat"><div class="feat-icon"><i class="fas fa-bolt"></i></div><h3>Instant Results</h3><p>Sub-second lookups. No waiting, no ads, no bs.</p></div>
+            <div class="feat"><div class="feat-icon"><i class="fas fa-database"></i></div><h3>Deep Database</h3><p>WHOIS, BGP, ASN, abuse contacts — all in one place.</p></div>
+            <div class="feat"><div class="feat-icon"><i class="fas fa-globe"></i></div><h3>Multi-Source</h3><p>Cross-references multiple APIs for the most accurate result.</p></div>
+            <div class="feat"><div class="feat-icon"><i class="fas fa-shield-alt"></i></div><h3>No Tracking</h3><p>Zero logs. Your queries stay yours.</p></div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <span>Made by <b>Yaman</b> · <a href="https://github.com/ywm1337/checkip" target="_blank">Open Source</a></span>
     </footer>

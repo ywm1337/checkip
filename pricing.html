@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing — CheckIP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="/" class="brand"><i class="fas fa-globe"></i> CHECKIP</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/auth" class="nav-btn">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pricing-page">
+        <p class="tag mono" style="text-align:center;">PRICING</p>
+        <h1 style="text-align:center;margin-bottom:10px;">Simple, honest pricing.</h1>
+        <p class="lead" style="text-align:center;max-width:50ch;margin:0 auto 50px;">No hidden fees. Pick a plan that fits your needs.</p>
+
+        <div class="pricing-grid" id="pricingGrid"></div>
+    </div>
+
+    <footer class="footer">
+        <span>Made by <b>Yaman</b> · <a href="https://github.com/ywm1337/checkip" target="_blank">Open Source</a></span>
+    </footer>
+
+    <script>
+        const plans = [
+            { id:'free', name:'Free', price:0, credits:10, features:['10 lookups/day','Basic geolocation','ISP & location','DNS records'], popular:false },
+            { id:'starter', name:'Starter', price:5, credits:50, features:['50 lookups/day','Everything in Free','WHOIS data','Abuse contacts','Related IPs','Priority speed'], popular:false },
+            { id:'premium', name:'Premium', price:10, credits:200, features:['200 lookups/day','Everything in Starter','BGP/ASN data','IP change history','Network prefix info','API access','Export results'], popular:true },
+            { id:'enterprise', name:'Enterprise', price:20, credits:'∞', features:['Unlimited lookups','Everything in Premium','Bulk lookup API','Custom rate limits','White-label ready','Dedicated support','SLA guarantee'], popular:false },
+        ];
+
+        const user = JSON.parse(localStorage.getItem('checkip_user') || 'null');
+        const grid = document.getElementById('pricingGrid');
+
+        plans.forEach(p => {
+            const isCurrent = user && user.plan === p.id;
+            grid.innerHTML += `
+                <div class="plan-card ${p.popular ? 'feature' : ''} ${isCurrent ? 'current' : ''}">
+                    ${p.popular ? '<span class="badge">MOST POPULAR</span>' : ''}
+                    ${isCurrent ? '<span class="badge current-badge">CURRENT PLAN</span>' : ''}
+                    <h3>${p.name}</h3>
+                    <p class="price">$${p.price}<span>${p.price === 0 ? '' : '/mo'}</span></p>
+                    <p class="credits-info">${p.credits}${typeof p.credits === 'number' ? ' lookups/day' : ''}</p>
+                    <ul>${p.features.map(f => '<li><i class="fas fa-check"></i> ' + f + '</li>').join('')}</ul>
+                    <button class="btn ${p.popular ? 'btn-primary' : 'btn-dark'}" onclick="selectPlan('${p.id}')">${isCurrent ? 'Current' : p.price === 0 ? 'Get Started' : 'Upgrade'}</button>
+                </div>
+            `;
+        });
+
+        function selectPlan(id) {
+            if (!user) { location.href = '/auth'; return; }
+            if (user.plan === id) return;
+            fetch('/api/upgrade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id },
+                body: JSON.stringify({ plan: id })
+            }).then(r => r.json()).then(d => {
+                if (d.ok) {
+                    user.plan = id;
+                    localStorage.setItem('checkip_user', JSON.stringify(user));
+                    location.reload();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

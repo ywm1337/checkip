@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — CheckIP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="/" class="brand"><i class="fas fa-globe"></i> CHECKIP</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/pricing">Pricing</a>
+                <span class="nav-user" id="navUser"></span>
+                <a href="#" onclick="logout()" class="nav-btn">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard">
+        <div class="dash-header">
+            <div>
+                <h1>Dashboard</h1>
+                <p class="lead" style="margin:0;">Welcome back, <span id="dashEmail"></span></p>
+            </div>
+            <div class="dash-plan">
+                <span class="plan-badge" id="dashPlan"></span>
+                <a href="/pricing" class="btn btn-ghost" style="font-size:13px;">Change Plan</a>
+            </div>
+        </div>
+
+        <div class="dash-stats">
+            <div class="stat-card">
+                <span class="stat-label">Credits Today</span>
+                <span class="stat-val" id="dashCredits">—</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Plan</span>
+                <span class="stat-val" id="dashPlanName">—</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Total Queries</span>
+                <span class="stat-val" id="dashTotal">—</span>
+            </div>
+        </div>
+
+        <div class="dash-search">
+            <div class="search-wrap">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="query" placeholder="Enter IP or domain..." autocomplete="off" spellcheck="false">
+                <button class="search-btn" id="searchBtn"><i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <div id="results" style="display:none;">
+            <div class="status-bar" id="statusBar">
+                <span class="status-dot"></span>
+                <span id="statusText">Ready</span>
+                <span class="status-time" id="statusTime"></span>
+            </div>
+            <div class="info-grid" id="infoGrid"></div>
+            <div class="info-grid" id="bgpGrid"></div>
+            <div class="info-grid" id="whoisGrid"></div>
+            <div class="section-header"><h2><i class="fas fa-project-diagram"></i> Related IPs</h2></div>
+            <div class="related-grid" id="relatedGrid"></div>
+            <div class="section-header"><h2><i class="fas fa-list"></i> DNS Records</h2></div>
+            <div class="dns-grid" id="dnsGrid"></div>
+            <div class="section-header"><h2><i class="fas fa-history"></i> Recent Lookups</h2></div>
+            <div class="history-grid" id="historyGrid"></div>
+        </div>
+    </div>
+
+    <footer class="footer"><span>Made by <b>Yaman</b></span></footer>
+    <script src="js/app.js"></script>
+    <script>
+        const user = JSON.parse(localStorage.getItem('checkip_user') || 'null');
+        if (!user) location.href = '/auth';
+
+        document.getElementById('navUser').textContent = user.email;
+        document.getElementById('dashEmail').textContent = user.email;
+        document.getElementById('dashPlan').textContent = user.plan.toUpperCase();
+        document.getElementById('dashPlanName').textContent = user.plan;
+
+        loadCredits();
+        loadHistory();
+
+        async function loadCredits() {
+            const res = await fetch('/api/credits', { headers: { 'X-User-Id': user.id } });
+            const d = await res.json();
+            document.getElementById('dashCredits').textContent = d.credits === -1 ? '∞' : d.credits;
+        }
+
+        async function loadHistory() {
+            const res = await fetch('/api/history', { headers: { 'X-User-Id': user.id } });
+            const data = await res.json();
+            const grid = document.getElementById('historyGrid');
+            grid.innerHTML = '';
+            data.slice(0, 10).forEach(h => {
+                grid.innerHTML += '<div class="hist-item"><span class="mono">' + h.query + '</span><span class="mut">' + new Date(h.created_at).toLocaleString() + '</span></div>';
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('checkip_user');
+            location.href = '/';
+        }
+    </script>
+</body>
+</html>
